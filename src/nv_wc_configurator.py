@@ -1,0 +1,110 @@
+"""Plugin template for novelibre.
+
+Requires Python 3.7+
+Copyright (c) Peter Triesberger
+For further information see https://github.com/peter88213/nv_wc_configurator
+License: GNU GPLv3 (https://www.gnu.org/licenses/gpl-3.0.en.html)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+"""
+from pathlib import Path
+import webbrowser
+
+from nvwcconf.nvplugin_locale import _
+from nvlib.controller.plugin.plugin_base import PluginBase
+
+
+# this should be the first import
+class Plugin(PluginBase):
+    """Template plugin class."""
+    VERSION = '@release'
+    API_VERSION = '5.50'
+    DESCRIPTION = 'Word counter configurator'
+    URL = 'https://github.com/peter88213/nv_wc_configurator'
+
+    HELP_URL = 'https://github.com/peter88213/nv_wc_configurator/tree/main/docs/nv_wc_configurator'
+
+    INI_FILENAME = 'wcconfig.ini'
+    INI_FILEPATH = '.novx/config'
+    SETTINGS = dict(
+        additional_word_separators='—–',
+        additional_chars_to_ignore='',
+    )
+    OPTIONS = {}
+
+    def install(self, model, view, controller):
+        """Install the plugin.
+        
+        Positional arguments:
+            model -- reference to the novelibre main model instance.
+            view -- reference to the novelibre main view instance.
+            controller -- reference to the novelibre main controller instance.
+
+        Extends the superclass method.
+        """
+        super().install(model, view, controller)
+
+        #--- Configure the main menu.
+
+        # Add an entry to the Help menu.
+        label = _('nv_wc_configurator Online help')
+        self._ui.helpMenu.add_command(
+            label=label,
+            command=self.open_help,
+        )
+
+        #--- Load configuration.
+        try:
+            homeDir = str(Path.home()).replace('\\', '/')
+            configDir = f'{homeDir}/{self.INI_FILEPATH}'
+        except:
+            configDir = '.'
+        self.iniFile = f'{configDir}/{self.INI_FILENAME}'
+        self.configuration = self._mdl.nvService.new_configuration(
+            settings=self.SETTINGS,
+            options=self.OPTIONS,
+        )
+        self.configuration.read(self.iniFile)
+        self._prefs = {}
+        self._prefs.update(self.configuration.settings)
+        self._prefs.update(self.configuration.options)
+
+        self._wordCounter = self._mdl.nvService.get_word_counter()
+        self.configure_word_counter()
+
+    def configure_word_counter(self):
+        try:
+            self._wordCounter.set_ignore_regex(
+                self._prefs['additional_chars_to_ignore']
+            )
+            self._wordCounter.set_separator_regex(
+                self._prefs['additional_word_separators']
+            )
+        except AttributeError:
+            pass
+
+    def on_quit(self):
+        """Write back the configuration file.
+        
+        Overrides the superclass method.
+        """
+
+        #--- Save configuration
+        for keyword in self._prefs:
+            if keyword in self.configuration.options:
+                self.configuration.options[keyword] = self._prefs[keyword]
+            elif keyword in self.configuration.settings:
+                self.configuration.settings[keyword] = self._prefs[keyword]
+        self.configuration.write(self.iniFile)
+
+    def open_help(self):
+        webbrowser.open(self.HELP_URL)
+
