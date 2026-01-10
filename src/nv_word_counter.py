@@ -20,10 +20,11 @@ import webbrowser
 
 from nvwordcnt.nvwordcnt_locale import _
 from nvlib.controller.plugin.plugin_base import PluginBase
+from nvwordcnt.word_counter import WordCounter
 
 
 class Plugin(PluginBase):
-    """Template plugin class."""
+    """Alternative word count plugin class."""
     VERSION = '@release'
     API_VERSION = '5.30'
     DESCRIPTION = 'Customizable word counter'
@@ -76,7 +77,8 @@ class Plugin(PluginBase):
         self._prefs.update(self.configuration.settings)
         self._prefs.update(self.configuration.options)
 
-        self._wordCounter = self._mdl.nvService.get_word_counter()
+        self._wordCounter = WordCounter()
+        self._mdl.nvService.change_word_counter(self._wordCounter)
         self.configure_word_counter()
 
     def configure_word_counter(self):

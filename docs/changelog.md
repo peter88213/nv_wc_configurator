@@ -5,8 +5,10 @@
 ## Changelog
 
 
-### Version 5.0.0
+### Version 0.3.0
 
-- Release under the GPLv3 license.
+- Including the alternative WordCounter class to replace the default at runtime.
+- The settings are to be made by editing the configuration file.
+- The documentation has yet to be created.
 
-Compatibility: novelibre version 5.0 API
+Compatibility: novelibre version 5.30 API
