@@ -39,7 +39,6 @@ class Plugin(PluginBase):
         additional_word_separators=['—', '–'],
         additional_chars_to_ignore=[]
     )
-    OPTIONS = {}
 
     def install(self, model, view, controller):
         """Install the plugin.
@@ -69,11 +68,10 @@ class Plugin(PluginBase):
         except:
             configDir = '.'
         self.iniFile = f'{configDir}/{self.INI_FILENAME}'
-        self._configuration = ConfigurationJson(self.SETTINGS, self.OPTIONS)
+        self._configuration = ConfigurationJson(self.SETTINGS)
         self._prefs = {}
         self._configuration.read(self.iniFile)
         self._prefs.update(self._configuration.settings)
-        self._prefs.update(self._configuration.options)
 
         #--- Replace the default word counter with the customizable one.
         self._wordCounter = WordCounter()
@@ -114,6 +112,9 @@ class Plugin(PluginBase):
         
         Overrides the superclass method.
         """
+        for keyword in self._prefs:
+            if keyword in self._configuration.settings:
+                self._configuration.settings[keyword] = self._prefs[keyword]
         self._configuration.write(self.iniFile)
 
     def open_help(self):

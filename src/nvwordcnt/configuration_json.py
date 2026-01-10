@@ -72,11 +72,13 @@ class ConfigurationJson:
             iniFile: str -- path configuration file path.
         """
         with open(iniFile, 'w', encoding='utf-8') as f:
+            config = {}
+            if self.settings:
+                config[self._sLabel] = self.settings
+            if self.options:
+                config[self._oLabel] = self.options
             json.dump(
-                {
-                  self._sLabel: self.settings,
-                  self._oLabel: self.options,
-                },
+                config,
                 f,
                 ensure_ascii=False,
                 indent=4,

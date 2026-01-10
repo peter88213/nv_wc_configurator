@@ -5,6 +5,13 @@
 ## Changelog
 
 
+### Version 0.6.0
+
+- ConfigurationJson no longer saving empty options. 
+
+Compatibility: novelibre version 5.30 API
+
+
 ### Version 0.5.0
 
 - Created a JSON configuration class compatible with Configuration.
