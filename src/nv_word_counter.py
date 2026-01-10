@@ -15,6 +15,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 """
+import json
 from pathlib import Path
 import webbrowser
 
@@ -32,13 +33,12 @@ class Plugin(PluginBase):
 
     HELP_URL = 'https://github.com/peter88213/nv_word_counter/tree/main/docs/nv_word_counter'
 
-    INI_FILENAME = 'wordcounter.ini'
+    INI_FILENAME = 'wordcounter.json'
     INI_FILEPATH = '.novx/config'
-    SETTINGS = dict(
-        additional_word_separators='—–',
-        additional_chars_to_ignore='',
-    )
-    OPTIONS = {}
+    DEFAULTS = {
+        'additional_word_separators': ['—', '–'],
+        'additional_chars_to_ignore': []
+    }
 
     def install(self, model, view, controller):
         """Install the plugin.
@@ -62,20 +62,23 @@ class Plugin(PluginBase):
         )
 
         #--- Load configuration.
+        self._prefs = {}
         try:
             homeDir = str(Path.home()).replace('\\', '/')
             configDir = f'{homeDir}/{self.INI_FILEPATH}'
         except:
             configDir = '.'
         self.iniFile = f'{configDir}/{self.INI_FILENAME}'
-        self.configuration = self._mdl.nvService.new_configuration(
-            settings=self.SETTINGS,
-            options=self.OPTIONS,
-        )
-        self.configuration.read(self.iniFile)
-        self._prefs = {}
-        self._prefs.update(self.configuration.settings)
-        self._prefs.update(self.configuration.options)
+        try:
+            with open(self.iniFile, 'r', encoding='utf-8') as f:
+                prefs = json.load(f)
+        except FileNotFoundError:
+            prefs = {}
+        for key in self.DEFAULTS:
+            if key in prefs:
+                self._prefs[key] = prefs[key]
+            else:
+                self._prefs[key] = self.DEFAULTS[key]
 
         #--- Replace the default word counter with the customizable one.
         self._wordCounter = WordCounter()
@@ -116,14 +119,13 @@ class Plugin(PluginBase):
         
         Overrides the superclass method.
         """
-
-        #--- Save configuration
-        for keyword in self._prefs:
-            if keyword in self.configuration.options:
-                self.configuration.options[keyword] = self._prefs[keyword]
-            elif keyword in self.configuration.settings:
-                self.configuration.settings[keyword] = self._prefs[keyword]
-        self.configuration.write(self.iniFile)
+        with open(self.iniFile, 'w', encoding='utf-8') as f:
+            json.dump(
+                self._prefs,
+                f,
+                ensure_ascii=False,
+                indent=2,
+            )
 
     def open_help(self):
         webbrowser.open(self.HELP_URL)

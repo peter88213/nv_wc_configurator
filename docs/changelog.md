@@ -12,3 +12,9 @@
 - The documentation has yet to be created.
 
 Compatibility: novelibre version 5.30 API
+
+### Version 0.4.0
+
+- Using JSON for the configuration file.
+
+Compatibility: novelibre version 5.30 API
