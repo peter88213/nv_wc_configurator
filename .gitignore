@@ -2,5 +2,3 @@
 /test/
 *.pyc
 *.bak
-.pydevproject
-.project
