@@ -68,15 +68,15 @@ class Plugin(PluginBase):
             configDir = f'{homeDir}/{self.INI_FILEPATH}'
         except:
             configDir = '.'
-        self.iniFile = f'{configDir}/{self.INI_FILENAME}'
         self._configuration = ConfigurationJson(
             settings=self.SETTINGS,
-            options=self.OPTIONS
+            options=self.OPTIONS,
+            filePath=f'{configDir}/{self.INI_FILENAME}',
         )
         self._prefs = {}
-        self._configuration.read(self.iniFile)
+        self._configuration.read()
         self._prefs.update(self._configuration.settings)
-        self._prefs.update(self.configuration.options)
+        self._prefs.update(self._configuration.options)
 
         #--- Replace the default word counter with the customizable one.
         self._wordCounter = WordCounter()
@@ -122,7 +122,7 @@ class Plugin(PluginBase):
                 self._configuration.options[keyword] = self._prefs[keyword]
             elif keyword in self._configuration.settings:
                 self._configuration.settings[keyword] = self._prefs[keyword]
-        self._configuration.write(self.iniFile)
+        self._configuration.write()
 
     def open_help(self):
         webbrowser.open(self.HELP_URL)
